@@ -2,27 +2,12 @@ from flask import Flask, request, jsonify
 import base64
 import cv2
 import numpy as np
+from fer import FER  # Your original library
 
 app = Flask(__name__)
 
-def detect_emotion_simple(img):
-    face_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_frontalface_default.xml')
-    gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-    
-    # PROVEN WEB_CAM parameters (from GeeksforGeeks working example)
-    faces = face_cascade.detectMultiScale(
-        gray, 
-        scaleFactor=1.1,    # Standard for webcams
-        minNeighbors=5,     # Standard 
-        minSize=(30, 30)    # Smallest face size
-    )
-    
-    print(f"Detected {len(faces)} faces")  # Debug line
-    
-    if len(faces) > 0:
-        return f"happy (face size: {faces[0][2]})"
-    return "no_face"
-
+# Init FER detector (like your face_emotion_app.py)
+emotion_detector = FER()
 
 @app.route('/')
 def home():
@@ -36,10 +21,18 @@ def detect():
         nparr = np.frombuffer(img_data, np.uint8)
         img = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
         
-        emotion = detect_emotion_simple(img)
-        return jsonify({'emotion': emotion})
-    except:
-        return jsonify({'error': 'Detection failed'}), 500
+        # EXACTLY your face_emotion_app.py logic
+        rgb_frame = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+        emotion, score = emotion_detector.top_emotion(rgb_frame)
+        
+        if emotion:
+            result = f"{emotion}: {int(score * 100)}%"
+        else:
+            result = "no_face"
+            
+        return jsonify({'emotion': result})
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
 
 if __name__ == '__main__':
     app.run()
