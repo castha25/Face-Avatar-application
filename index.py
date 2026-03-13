@@ -6,15 +6,23 @@ import numpy as np
 app = Flask(__name__)
 
 def detect_emotion_simple(img):
-    # Simple face detection -> emotion guess (works without mediapipe)
     face_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_frontalface_default.xml')
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-    faces = face_cascade.detectMultiScale(gray, 1.3, 5)
+    
+    # PROVEN WEB_CAM parameters (from GeeksforGeeks working example)
+    faces = face_cascade.detectMultiScale(
+        gray, 
+        scaleFactor=1.1,    # Standard for webcams
+        minNeighbors=5,     # Standard 
+        minSize=(30, 30)    # Smallest face size
+    )
+    
+    print(f"Detected {len(faces)} faces")  # Debug line
     
     if len(faces) > 0:
-        # Simple emotion based on face position/size
-        return "happy" if faces[0][2] > 100 else "neutral"
+        return f"happy (face size: {faces[0][2]})"
     return "no_face"
+
 
 @app.route('/')
 def home():
