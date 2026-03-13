@@ -14,7 +14,7 @@ EMOTIONS = ['neutral', 'happiness', 'surprise', 'sadness', 'anger', 'disgust', '
 face_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_frontalface_default.xml')
 
 # Load ONNX emotion model once at startup
-MODEL_PATH = os.path.join(os.path.dirname(__file__), 'emotion-ferplus-2.onnx')
+MODEL_PATH = https://huggingface.co/aasthachaudhary25/emotion-detector/resolve/main/emotion-ferplus-2.onnx
 emotion_session = ort.InferenceSession(MODEL_PATH)
 input_name = emotion_session.get_inputs()[0].name
 
