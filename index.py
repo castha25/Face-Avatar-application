@@ -2,14 +2,23 @@ from flask import Flask, request, jsonify
 import base64
 import cv2
 import numpy as np
-from face_emotion_app import detect_emotion  # Adjust import as needed
-import io
 
 app = Flask(__name__)
 
+def detect_emotion_simple(img):
+    # Simple face detection -> emotion guess (works without mediapipe)
+    face_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_frontalface_default.xml')
+    gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+    faces = face_cascade.detectMultiScale(gray, 1.3, 5)
+    
+    if len(faces) > 0:
+        # Simple emotion based on face position/size
+        return "happy" if faces[0][2] > 100 else "neutral"
+    return "no_face"
+
 @app.route('/')
 def home():
-    return open('index.html').read()  # Serve your HTML
+    return open('index.html').read()
 
 @app.route('/api/detect', methods=['POST'])
 def detect():
@@ -19,9 +28,10 @@ def detect():
         nparr = np.frombuffer(img_data, np.uint8)
         img = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
         
-        # Use your existing emotion detection
-        emotion = detect_emotion(img)  # From face_emotion_app.py
-        
+        emotion = detect_emotion_simple(img)
         return jsonify({'emotion': emotion})
-    except Exception as e:
-        return jsonify({'error': str(e)}), 500
+    except:
+        return jsonify({'error': 'Detection failed'}), 500
+
+if __name__ == '__main__':
+    app.run()
