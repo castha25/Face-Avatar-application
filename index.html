@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Face Emotion Detection</title>
+    <style>
+        #webcam, #canvas { width: 640px; height: 480px; }
+        #emotion { font-size: 24px; color: blue; margin-top: 20px; }
+    </style>
+</head>
+<body>
+    <video id="webcam" autoplay muted></video>
+    <canvas id="canvas" style="display:none;"></canvas>
+    <div id="emotion">Click Start to begin detection</div>
+    
+    <button onclick="startDetection()" id="startBtn">Start Detection</button>
+    
+    <script>
+        const video = document.getElementById('webcam');
+        const canvas = document.getElementById('canvas');
+        const emotionDiv = document.getElementById('emotion');
+        let detectionInterval;
+
+        // Get webcam stream
+        navigator.mediaDevices.getUserMedia({video: true})
+            .then(stream => video.srcObject = stream)
+            .catch(err => console.error('Webcam error:', err));
+
+        function startDetection() {
+            document.getElementById('startBtn').style.display = 'none';
+            emotionDiv.textContent = 'Detecting...';
+            
+            // Send frame every 500ms (adjust as needed)
+            detectionInterval = setInterval(sendFrame, 500);
+        }
+
+        function sendFrame() {
+            canvas.getContext('2d').drawImage(video, 0, 0, 640, 480);
+            const dataURL = canvas.toDataURL('image/jpeg', 0.8);
+            
+            fetch('/api/detect', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({image: dataURL})
+            })
+            .then(r => r.json())
+            .then(data => {
+                emotionDiv.textContent = `Emotion: ${data.emotion}`;
+            })
+            .catch(err => console.error('Detection error:', err));
+        }
+    </script>
+</body>
+</html>
