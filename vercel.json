@@ -19,5 +19,10 @@
       "src": "/(.*)",
       "dest": "index.html"
     }
-  ]
+  ],
+  "functions": {
+    "index.py": {
+      "maxDuration": 60
+    }
+  }
 }
